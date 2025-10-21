@@ -29,10 +29,16 @@ medmnist-ssl/
   ├─ notebooks/
   │   └─ ML_Basics_MedMNIST_Colab.ipynb
   ├─ starter/
-  │   └─ ml_medmnist_starter_v2.zip
+  │   ├─ requirements.txt
+  │   └─ src/
+  │       ├─ data.py
+  │       ├─ metrics.py
+  │       ├─ models.py
+  │       ├─ train_medmnist.py
+  │       └─ utils.py
   ├─ results/
-  │   └─ week1/ ... week10/
-  │       └─ <dataset_key>/<your_name>/
+  │   ├─ week1/ ... week10/
+  │   │   └─ <your_name>/
   ├─ reports/
   ├─ figures/
   ├─ README.md
