@@ -1,0 +1,6 @@
+runs/
+__pycache__/
+.ipynb_checkpoints/
+*.pt
+*.png
+*.json
