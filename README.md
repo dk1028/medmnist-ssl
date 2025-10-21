@@ -90,6 +90,125 @@ python -m src.train_medmnist --dataset pneumoniamnist --model resnet18 --epochs 
 
 ---
 
+
+> This project uses **MedMNIST2D (binary)** only for Week 1 and beyond. Each member must choose **one** binary dataset — **BreastMNIST** (`breastmnist`) or **PneumoniaMNIST** (`pneumoniamnist`) — and will be assigned to it for the remainder of the project.
+
+* Allowed keys: `breastmnist`, `pneumoniamnist`
+
+---
+
+## A. Quickstart on Google Colab (Recommended)
+
+1. Open the notebook and enable GPU: **Runtime → Change runtime type → GPU**.
+2. Install dependencies:
+
+   ```python
+   !pip -q install medmnist torch torchvision scikit-learn matplotlib tqdm
+   ```
+3. Auto‑download and inspect a binary dataset (first run creates a cache):
+
+   ```python
+   import medmnist
+   from medmnist import INFO
+
+   KEY = 'pneumoniamnist'   # or 'breastmnist'
+   DataClass = getattr(medmnist, INFO[KEY]['python_class'])
+
+   train_ds = DataClass(split='train', download=True)
+   val_ds   = DataClass(split='val',   download=True)
+   test_ds  = DataClass(split='test',  download=True)
+
+   print('Cache root:', train_ds.root)          # typically /root/.medmnist on Colab
+   print('Shape:', train_ds.imgs.shape)
+   print('Labels:', INFO[KEY]['label'])
+   ```
+4. (Optional) Make Torch DataLoaders with transforms suitable for ResNet (RGB):
+
+   ```python
+   import torchvision.transforms as T
+   from torch.utils.data import DataLoader
+
+   tf = T.Compose([
+       T.Resize((64, 64)),
+       T.ToTensor(),
+       T.Lambda(lambda x: x.repeat(3,1,1) if x.shape[0]==1 else x),  # 1ch→3ch
+   ])
+
+   train_ds = DataClass(split='train', transform=tf, download=True)
+   val_ds   = DataClass(split='val',   transform=tf, download=True)
+   test_ds  = DataClass(split='test',  transform=tf, download=True)
+
+   train_loader = DataLoader(train_ds, batch_size=128, shuffle=True)
+   val_loader   = DataLoader(val_ds,   batch_size=128, shuffle=False)
+   test_loader  = DataLoader(test_ds,  batch_size=128, shuffle=False)
+   ```
+
+**Notes**
+
+* Colab cache location: `/root/.medmnist`. Subsequent calls won’t re‑download.
+* If memory is tight, reduce image size (e.g., 32×32) or batch size.
+
+---
+
+## B. Local Setup (Optional)
+
+1. Create a virtualenv (recommended) and install packages:
+
+   ```bash
+   pip install medmnist torch torchvision scikit-learn matplotlib tqdm
+   ```
+2. Auto‑download the dataset to your home cache:
+
+   ```python
+   import medmnist
+   from medmnist import INFO
+
+   KEY = 'breastmnist'      # or 'pneumoniamnist'
+   DataClass = getattr(medmnist, INFO[KEY]['python_class'])
+
+   train = DataClass(split='train', download=True)
+   val   = DataClass(split='val',   download=True)
+   test  = DataClass(split='test',  download=True)
+
+   print(train.root)  # usually ~/.medmnist
+   ```
+3. (Optional) Add Torch transforms and DataLoaders exactly as in the Colab example.
+
+**Notes**
+
+* Local cache location: `~/.medmnist` (Windows/macOS/Linux under your home directory).
+* To force a re‑download, delete the cache directory and re‑run with `download=True`.
+
+---
+
+## C. Dataset Keys & Labels (Binary 2D Only)
+
+```python
+from medmnist import INFO
+for key in ['breastmnist', 'pneumoniamnist']:
+    print(key, INFO[key]['label'])  # class names
+```
+
+* `breastmnist`: benign vs malignant
+* `pneumoniamnist`: pneumonia vs normal
+
+> We stick to binary tasks to stabilize the pipeline early (clean baselines, fair comparisons), then extend with SSL in Weeks 4–6.
+
+---
+
+## D. Where to Place Artifacts in This Repo
+
+After a run (Colab or local), copy curated results (not entire `runs/`) to:
+
+```
+results/week1 to 10/<dataset_key>/<your_name>/
+  ├─ test_metrics.json
+  ├─ reliability.png
+  ├─ screenshot_env.png
+  └─ README_week1.md
+```
+
+
 ## 3) Week-by-Week Plan (Deliverables Included)
 
 ### Week 1 — Kickoff & Baseline Run (binary only)
