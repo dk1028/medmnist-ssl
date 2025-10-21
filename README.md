@@ -122,26 +122,6 @@ python -m src.train_medmnist --dataset pneumoniamnist --model resnet18 --epochs 
    print('Shape:', train_ds.imgs.shape)
    print('Labels:', INFO[KEY]['label'])
    ```
-4. (Optional) Make Torch DataLoaders with transforms suitable for ResNet (RGB):
-
-   ```python
-   import torchvision.transforms as T
-   from torch.utils.data import DataLoader
-
-   tf = T.Compose([
-       T.Resize((64, 64)),
-       T.ToTensor(),
-       T.Lambda(lambda x: x.repeat(3,1,1) if x.shape[0]==1 else x),  # 1ch→3ch
-   ])
-
-   train_ds = DataClass(split='train', transform=tf, download=True)
-   val_ds   = DataClass(split='val',   transform=tf, download=True)
-   test_ds  = DataClass(split='test',  transform=tf, download=True)
-
-   train_loader = DataLoader(train_ds, batch_size=128, shuffle=True)
-   val_loader   = DataLoader(val_ds,   batch_size=128, shuffle=False)
-   test_loader  = DataLoader(test_ds,  batch_size=128, shuffle=False)
-   ```
 
 **Notes**
 
