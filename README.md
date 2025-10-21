@@ -1,47 +1,40 @@
-# medmnist-ssl — Week 1 README (GitHub + Colab)
+# medmnist-ssl — Weeks 1–10 README (Research Plan + How-To)
 
-> **Scope for Week 1**: We will run one end-to-end training on **MedMNIST2D (binary-class datasets only)**, save outputs, and push minimal artifacts to GitHub. Each team member **must pick exactly one binary dataset** and will be assigned to that dataset for the rest of the project.
+> **Goal:** Undergraduate-friendly, **research-oriented** project using **MedMNIST2D (binary-class only)** with a required **Self-Supervised Contrastive Learning (SSL)** phase. We will build baselines, pretrain with SSL, and evaluate label efficiency and calibration.
 
-* MedMNIST site: [https://medmnist.com/](https://medmnist.com/)
-* This repo name: **`medmnist-ssl`** (private recommended)
-* Audience: U0–U1 (McGill COMP202/250/206 level)
-
----
-
-## 1) Binary Datasets (MedMNIST2D only)
-
-We will restrict Week 1 to **binary** classification datasets in MedMNIST2D:
-
-* **BreastMNIST** — benign vs malignant (binary)
-* **PneumoniaMNIST** — pneumonia vs normal (binary)
-
-> ✅ Pick **one** of the above. Each member will be **assigned** to the dataset they choose.
-
-**Dataset keys to use in code**
-
-* `breastmnist`
-* `pneumoniamnist`
-
-> (Do **not** pick non-binary sets like PathMNIST/DermaMNIST/BloodMNIST/ChestMNIST)
+* Site: [https://medmnist.com/](https://medmnist.com/)
+* Allowed Week 1 datasets: **BreastMNIST** (`breastmnist`), **PneumoniaMNIST** (`pneumoniamnist`)
+* Repo name: **`medmnist-ssl`** 
 
 ---
 
-## 2) Repository Structure (suggested)
+## 0) Roles & Dataset Assignment
+
+* Each member **must choose one** MedMNIST2D **binary** dataset: `breastmnist` or `pneumoniamnist`.
+* You will be **assigned** to your choice and keep it for all weeks (for fair comparisons).
+* Create your personal results folder under:
+  `results/weekX/<dataset_key>/<your_name>/`
+
+**How to claim a dataset**
+
+* Create a GitHub Issue titled: `Signup: <your_name> — <dataset_key>`
+* Include: system specs (Colab/local), preferred model (smallcnn/resnet18)
+
+---
+
+## 1) Repository Structure
 
 ```
 medmnist-ssl/
   ├─ notebooks/
-  │   └─ ML_Basics_MedMNIST_Colab.ipynb   # provided starter
+  │   └─ ML_Basics_MedMNIST_Colab.ipynb
   ├─ starter/
-  │   └─ ml_medmnist_starter_v2.zip       # optional CLI starter
+  │   └─ ml_medmnist_starter_v2.zip
   ├─ results/
-  │   └─ week1/
-  │       └─ <dataset_key>/
-  │           └─ <your_name>/             # your personal folder
-  │               ├─ test_metrics.json
-  │               ├─ reliability.png
-  │               ├─ screenshot_env.png
-  │               └─ README_week1.md
+  │   └─ week1/ ... week10/
+  │       └─ <dataset_key>/<your_name>/
+  ├─ reports/
+  ├─ figures/
   ├─ README.md
   └─ .gitignore
 ```
@@ -57,138 +50,211 @@ __pycache__/
 *.json
 ```
 
-> We will copy **just the final artifacts** to `results/week1/...`. Do not commit large raw run folders.
+> Commit only curated artifacts to `results/` (metrics/plots/screens). Do **not** commit bulky raw `runs/`.
 
 ---
 
-## 3) Quickstart — Google Colab (recommended)
+## 2) Environment & Tools
 
-1. Open `notebooks/ML_Basics_MedMNIST_Colab.ipynb` in **Google Colab**.
-2. Turn on GPU: **Runtime → Change runtime type → GPU**.
-3. Run cells top→down. In the **config** cell, set:
+* **Primary runtime:** Google Colab (GPU). Local runs are optional.
+* **Packages:** `torch`, `torchvision`, `medmnist`, `scikit-learn`, `matplotlib`, `tqdm`, `numpy` (already in the notebook/starter).
+* **Data handling:** The `medmnist` package **auto-downloads** datasets on first use and caches at `~/.medmnist` (Colab: `/root/.medmnist/`).
 
-   ```python
-   DATASET_KEY = 'pneumoniamnist'  # or 'breastmnist' (pick ONE)
-   MODEL_NAME  = 'resnet18'        # or 'smallcnn' if runtime is slow
-   EPOCHS      = 5                 # Week 1 target
-   BATCH_SIZE  = 128               # use 64/32 if you hit memory issues
-   ```
-4. The dataset will **auto-download** via the `medmnist` package and cache at `~/.medmnist` (Colab: `/root/.medmnist/`).
-5. After training, verify `runs/` contains:
+**Colab quickstart**
 
-   * `best.pt`, `val_log.jsonl`, `test_metrics.json`, `reliability.png`
-6. Copy the three artifacts + screenshot to your `results/week1/<dataset>/<your_name>/` folder.
-
-**Optional: Save to Google Drive**
+1. Open `notebooks/ML_Basics_MedMNIST_Colab.ipynb` in Colab.
+2. **Runtime → Change runtime type → GPU**.
+3. Run cells top→down. In the config cell, set:
 
 ```python
-from google.colab import drive
-drive.mount('/content/drive')
-OUTDIR = '/content/drive/MyDrive/medmnist_runs'
-# Use OUTDIR for saving models/figures if you want them persisted between sessions.
+DATASET_KEY = 'pneumoniamnist'  # or 'breastmnist'
+MODEL_NAME  = 'resnet18'        # or 'smallcnn' if slow
+EPOCHS      = 5                 # adjust per week
+BATCH_SIZE  = 128               # use 64/32 if memory is tight
+```
+
+**Local quickstart (optional)**
+
+```bash
+pip install -r starter/requirements.txt
+python -m src.train_medmnist --dataset breastmnist --model smallcnn --epochs 5
+# or
+python -m src.train_medmnist --dataset pneumoniamnist --model resnet18 --epochs 5 --finetune head
 ```
 
 ---
 
-## 4) Alternative — Local (optional)
+## 3) Week-by-Week Plan (Deliverables Included)
 
-1. Unzip `starter/ml_medmnist_starter_v2.zip`.
-2. Create a venv and install requirements:
+### Week 1 — Kickoff & Baseline Run (binary only)
 
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Run a 5-epoch baseline:
+**Do:**
 
-   ```bash
-   # SmallCNN (faster)
-   python -m src.train_medmnist --dataset pneumoniamnist --model smallcnn --epochs 5
+* Pick `breastmnist` or `pneumoniamnist` (via Issue signup).
+* Colab GPU on → run 5-epoch baseline (`smallcnn` or `resnet18 --finetune head`).
+* Verify outputs: `best.pt`, `val_log.jsonl`, `test_metrics.json`, `reliability.png`.
 
-   # ResNet18 (head-only finetune)
-   python -m src.train_medmnist --dataset breastmnist --model resnet18 --epochs 5 --finetune head
-   ```
-4. Collect `test_metrics.json`, `reliability.png`, and a terminal screenshot.
+**Submit to** `results/week1/<dataset>/<your_name>/`:
+
+* `test_metrics.json`, `reliability.png`, `screenshot_env.png`, `README_week1.md` (3–5 sentences: model/epochs/batch; one issue + fix; Acc/AUROC note).
 
 ---
 
-## 5) Week 1 Tasks (what to submit)
+### Week 2 — EDA & Baselines
 
-Place the following under `results/week1/<dataset_key>/<your_name>/`:
+**Do:**
 
-* `test_metrics.json` — copy from your run (contains Accuracy/AUROC, etc.)
-* `reliability.png` — reliability diagram (ECE on the title)
-* `screenshot_env.png` — Colab or terminal screenshot
-* `README_week1.md` (3–5 sentences):
+* Quick EDA: class counts, sample tiles, input sizes.
+* Train `smallcnn` and `resnet18 --finetune head` (5–8 epochs). Record Val Acc & Macro-AUROC.
 
-  * Which dataset and model you used
-  * Epochs + batch size (and `--finetune` if ResNet18)
-  * One small issue you hit (if any) and how you fixed it
-  * One observation about Acc/AUROC across epochs
+**Submit (week2/…):**
 
-**Rubric (Week 1, 10 pts for progress tracking)**
-
-* (3) One successful 5-epoch run with artifacts present
-* (3) `test_metrics.json` + `reliability.png` included
-* (2) Clear short write-up
-* (2) Repo hygiene (`results/` structure, `.gitignore` honored)
+* Table: model vs Acc/AUROC; 3–5 misclassified samples with comments.
 
 ---
 
-## 6) GitHub: simplest workflow
+### Week 3 — Finetune-All & Light Augmentations
 
-**Create the repo**
+**Do:**
 
-1. Go to GitHub → **New repository** → name: `medmnist-ssl` → Private → Create.
-2. Click **Upload files** and add:
+* Compare `resnet18 --finetune head` vs `--finetune all`.
+* Light augmentation ablation (2–3 variants) appropriate to modality.
 
-   * `notebooks/ML_Basics_MedMNIST_Colab.ipynb`
-   * `starter/ml_medmnist_starter_v2.zip` (optional)
-   * `results/week1/...` (after you run)
+**Submit (week3/…):**
 
-**Commit message examples**
-
-* `Week1: add notebook + results (pneumoniamnist)`
-* `Week1: baseline (breastmnist, smallcnn) + metrics`
-
-> Tip: If files are large, only upload the three artifacts + screenshot.
+* Learning curves (train/val), ablation table (variant → AUROC), short note on over/underfitting.
 
 ---
 
-## 7) Colab: common pitfalls
+### Week 4 — SSL Pretraining (Required)
 
-* **No GPU**: Runtime → Change runtime type → **GPU**, then rerun the install cell.
-* **Slow runtime**: use `MODEL_NAME='smallcnn'`, reduce `BATCH_SIZE` to 64 or 32.
-* **Import errors**: rerun the install cell (Colab resets packages when it restarts).
-* **Permission/Path**: ensure the output directory exists before saving.
+**Do:**
 
----
+* Implement **SimCLR-lite** or **MoCo-lite** on the train split treated as unlabeled.
+* Two augmented views per image; contrastive loss; small projection head.
 
-## 8) Research framing (why we do this)
+**Suggested settings:**
 
-* We’re preparing for **self-supervised contrastive learning (SSL)** in Weeks 4–6.
-* Week 1 is about having a **working, reproducible baseline** for a **binary** medical task.
-* Keep notes: we will compare **supervised vs. transfer vs. SSL** later on the same dataset.
+* SimCLR: large batch if possible; MoCo-lite: queue 2k–8k, momentum ~0.99.
+* Temperature τ ≈ 0.2; AdamW lr 1e-3 to 3e-4; 30–50 epochs on Colab.
 
----
+**Submit (week4/…):**
 
-## 9) Who does what (assignment)
-
-* Each member **chooses one** binary dataset: `breastmnist` or `pneumoniamnist`.
-* You will be **assigned** to that dataset for the project (keep using it in later weeks).
-* Use your own subfolder: `results/week1/<dataset_key>/<your_name>/`.
+* SSL training log (loss vs epoch), config JSON (τ, batch/queue, augs), short paragraph explaining choices.
 
 ---
 
-## 10) FAQ
+### Week 5 — Linear Probe & Label Efficiency
 
-* **Can I change datasets later?** Prefer not to, for fair comparisons over time. If you must, note it clearly in your README.
-* **Do I need exact numbers in Week 1?** No—just show that the pipeline runs and artifacts are produced. We’ll optimize later.
-* **Where do we discuss issues?** Open a short GitHub Issue titled `Week1: <your_name> <dataset_key>` with your question and what you tried.
+**Do:**
+
+* Freeze SSL encoder; train a linear head with **1% / 5% / 10%** labels (keep Val/Test unchanged).
+
+**Submit (week5/…):**
+
+* Plots: fraction vs Accuracy; fraction vs Macro-AUROC.
+* Comparison note vs supervised-only and ImageNet-transfer baselines.
 
 ---
 
-## 11) Next steps (preview)
+### Week 6 — SSL Fine-tuning & Calibration
 
-* **Week 2–3**: EDA, SmallCNN vs ResNet18 (head/all), light augmentation sanity checks.
-* **Weeks 4–6**: Required **SSL** (pretrain → linear probe → fine-tune) on your chosen dataset.
-* **Weeks 7–10**: Reliability (ECE), error analysis, writing + short talk.
+**Do:**
+
+* Unfreeze encoder; small-lr fine-tune; compute **ECE** & plot **reliability diagram**.
+
+**Submit (week6/…):**
+
+* Table: SSL probe vs SSL fine-tune vs baselines (Acc, AUROC, **ECE**).
+* Reliability plot + 3–5 line interpretation.
+
+---
+
+### Week 7 — Thresholds, PR/ROC, Error Analysis
+
+**Do:**
+
+* Choose operating points (e.g., target TPR/FPR).
+* Class-wise PR (binary case: positive class PR), collect **high-confidence errors**.
+
+**Submit (week7/…):**
+
+* Threshold table; error gallery with brief annotations and potential fixes.
+
+---
+
+### Week 8 — Ethics, Limits, and Mini Robustness Test
+
+**Do:**
+
+* Short note on risks/assumptions; optional MC Dropout uncertainty on a batch, or tiny domain-shift test.
+
+**Submit (week8/…):**
+
+* 1-page note (ethics/limits/mitigations); small table/plot for the mini test.
+
+---
+
+### Week 9 — Writing & Figures
+
+**Do:**
+
+* Draft a short, paper-style writeup (4–6 pages): Intro, Methods, Experiments, Results, Discussion.
+* Finalize label-efficiency, ROC/PR, reliability plots; tidy tables.
+
+**Submit (week9/…):**
+
+* Draft v1 PDF + checklist of gaps; figure sources and scripts.
+
+---
+
+### Week 10 — Talk & Final Artifacts
+
+**Do:**
+
+* Prepare a 10–12 min talk; two practice runs.
+* Freeze artifacts; top-level README pointers to reproduce in ≤1 hour on Colab.
+
+**Submit (week10/…):**
+
+* Final PDF (writeup) + slide deck; reproducibility checklist.
+
+---
+
+## 4) Metrics & Evaluation
+
+* **Primary:** Accuracy, **Macro-AUROC** (binary: AUROC), **ECE** (reliability diagram).
+* **Secondary:** Precision/Recall/F1 (report for transparency).
+* Keep seeds fixed; note all hyperparameters and label fractions.
+
+---
+
+## 5) Contribution Workflow
+
+* Use Issues for questions (`WeekX: <name> <dataset>`).
+* Commit messages: `Week3: finetune-all + aug ablation (breastmnist)`.
+* Prefer PRs for larger changes; include brief descriptions and screenshots.
+
+---
+
+## 6) Troubleshooting (Colab)
+
+* **No GPU** → Runtime → Change runtime type → GPU; rerun install cell.
+* **Slow** → `MODEL_NAME='smallcnn'`, lower `BATCH_SIZE`.
+* **Import errors** → rerun install cell (Colab resets on restart).
+* **Save errors** → ensure the output directory exists.
+
+---
+
+## 7) Ethics, Privacy, Integrity
+
+* No PHI; use only public MedMNIST data under its license.
+* Report results honestly; include failure cases; avoid overclaiming.
+
+---
+
+## 8) Success Criteria
+
+* Clean baselines and SSL results at 1%, 5%, 10% labels on your assigned **binary** dataset.
+* Clear evidence of when SSL helps (or not) with calibration analysis.
+* Reproducible artifacts, tidy repo, concise writeup and talk.
