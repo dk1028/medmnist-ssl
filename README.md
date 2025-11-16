@@ -203,18 +203,240 @@ results/week1 to 10/<your_name>/
 
 * `test_metrics.json`, `reliability.png`, `screenshot_env.png`, `README_week1.md` (3–5 sentences: model/epochs/batch; one issue + fix; Acc/AUROC note).
 
+
+**Week 1 summary:**
+Breast: Low discrimination (especially AUROC) vs. good calibration (low ECE)
+
+Pneumonia: Good discrimination (high AUROC) vs. overconfidence (high ECE)
 ---
 
-### Week 2 — EDA & Baselines
+## Week 2 — EDA, Baselines & First Calibration Check
 
-**Do:**
+> **Theme:** "Know your data, trust your baselines."  This week you (1) explore the dataset, (2) build **two solid supervised baselines**, and (3) run a **first calibration / reliability check** that we will refine in later weeks.
 
-* Quick EDA: class counts, sample tiles, input sizes.
-* Train `smallcnn` and `resnet18 --finetune head` (5–8 epochs). Record Val Acc & Macro-AUROC.
+Target datasets (fixed from Week 1):
 
-**Submit (week2/…):**
+* `breastmnist`  (benign vs malignant)
+* `pneumoniamnist` (pneumonia vs normal)
 
-* Table: model vs Acc/AUROC; 3–5 misclassified samples with comments.
+All work stays on **your assigned dataset**.
+
+---
+
+### 2.1 Goals
+
+By the end of Week 2, you should:
+
+1. Understand the **basic statistics** of your dataset:
+
+   * Class counts (train/val/test)
+   * Example images per class
+   * Input shape / value range
+2. Train **two supervised baselines** on your dataset:
+
+   * `smallcnn`
+   * `resnet18 --finetune head`
+3. Produce a **short, interpretable comparison**:
+
+   * Accuracy and **Macro-AUROC** for both models
+   * A few **misclassified examples** with comments
+   * A *first* look at **calibration** (reliability diagram + ECE)
+
+This sets the reference point for Weeks 3–6 (finetuning, SSL, and calibration improvements).
+
+---
+
+### 2.2 Directory & Filenames
+
+Create your personal folder for this week:
+
+```bash
+results/week2/<dataset_key>/<your_name>/
+```
+
+Inside, we expect something like:
+
+```text
+results/week2/<dataset_key>/<your_name>/
+  ├─ metrics_smallcnn.json
+  ├─ metrics_resnet18_head.json
+  ├─ cm_smallcnn.png             # confusion matrix
+  ├─ cm_resnet18_head.png
+  ├─ misclassified_gallery.png   # 3–5 interesting mistakes
+  ├─ reliability_smallcnn.png    # optional but strongly encouraged
+  ├─ reliability_resnet18_head.png
+  └─ README_week2.md             # your 0.5–1 page summary
+```
+
+> As always, do **not** commit raw `runs/` directories. Only commit curated metrics/plots/screenshots.
+
+---
+
+### 2.3 Step 1 — Quick EDA
+
+Use either the provided Colab notebook or a small Python script in `starter/src/` to:
+
+1. **Inspect shapes and dtypes**
+
+   * Print `imgs.shape`, `imgs.dtype`, and label dictionary `INFO[KEY]['label']`.
+2. **Compute class counts**
+
+   * For train/val/test, count how many samples belong to each label.
+   * Report the **class balance** in `README_week2.md`.
+3. **Visualize sample tiles**
+
+   * Show at least 4–8 examples per class.
+   * Comment on obvious differences (e.g., contrast, intensity, texture).
+
+In your README, add 2–4 bullet points answering:
+
+* Is the dataset **balanced or imbalanced**?
+* Are there any **surprising artifacts** (e.g., text overlays, padding)?
+* Do images for different classes look clearly separable to you?
+
+---
+
+### 2.4 Step 2 — Supervised Baselines (smallcnn vs resnet18-head)
+
+We standardize two baselines:
+
+1. **Small CNN** (from `models.py`):
+
+   * For fast iterations and sanity checks.
+2. **ResNet-18, linear head only (`--finetune head`)**:
+
+   * Backbone frozen, train only the classifier head on MedMNIST.
+
+Suggested hyperparameters (tweak if needed, but keep notes):
+
+* Epochs: **5–8**
+* Batch size: 64–128 (reduce if you hit OOM)
+* Optimizer: Adam or SGD with momentum (as in starter script)
+
+Example CLI calls:
+
+```bash
+# smallcnn
+python -m src.train_medmnist \
+  --dataset <dataset_key> \
+  --model smallcnn \
+  --epochs 8
+
+# resnet18, finetune head only
+python -m src.train_medmnist \
+  --dataset <dataset_key> \
+  --model resnet18 \
+  --finetune head \
+  --epochs 8
+```
+
+For each run, save test/validation metrics into separate JSON files
+(fore example, `metrics_smallcnn.json`, `metrics_resnet18_head.json`).
+If the script already outputs a metrics JSON, simply copy/rename it into your Week 2 folder.
+
+In `README_week2.md`, include a **small table** like:
+
+| Model           | Val Acc | Test Acc | Test AUROC |
+| --------------- | ------: | -------: | ---------: |
+| smallcnn        |    0.xx |     0.xx |       0.xx |
+| resnet18 (head) |    0.xx |     0.xx |       0.xx |
+
+and a 2–3 sentence comment on which model behaves better and why you think that is.
+
+---
+
+### 2.5 Step 3 — First Calibration / Reliability Check
+
+This week we already start to **look at calibration**, but only lightly. A full calibration study comes later (Weeks 5–6).
+
+1. For at least one model (preferably `resnet18 --finetune head`):
+
+   * Collect **predicted probabilities** on the **validation** or **test** set.
+   * Build a **reliability diagram** and compute **ECE**.
+
+2. **Binning strategy**
+
+   * Default: 10 **equal-width** bins on [0, 1].
+   * *Improvement tip:* Try **equal-frequency bins** (each bin has roughly the same number of samples). This often makes the reliability plot easier to interpret in high-confidence regions.
+
+3. **Plotting**
+
+   * Plot the **mean predicted probability** vs **empirical accuracy** per bin.
+   * Also show the **histogram of sample counts** per bin (either in the same figure or a small inset) so readers can see where most predictions lie.
+   * In the title or caption, **print the final ECE value** (3 decimal places), e.g., `ECE = 0.073`.
+
+If `metrics.py` already has an ECE implementation, use it. Otherwise, you can implement a simple version for now; it does not need to be perfect at this stage.
+
+In `README_week2.md`, write 3–5 sentences interpreting the plot, for example:
+
+* Does the model tend to be **over-confident** (predicted probabilities too high)?
+* Or **under-confident** (probabilities too low)?
+* Is calibration different across low vs high confidence bins?
+
+> **Small dataset-specific infos (optional, not required):**
+>
+> * For **PneumoniaMNIST**, a single round of **temperature scaling (TS)** on validation logits often reduces ECE noticeably, while AUROC barely changes. You can try TS once if you have time and compare ECE before/after.
+> * For **BreastMNIST**, spending more effort on **better features** (for example, slightly longer training, light data augmentation) may matter more than TS at this stage.
+
+If you do try TS, save a second reliability plot (for example, `reliability_resnet18_head_TS.png`) and briefly note the difference.
+
+---
+
+### 2.6 Misclassified Examples & Error Commentary
+
+Pick **3–5 interesting misclassified samples** from the test set for one of your models (preferably the stronger one).
+
+For each sample, record:
+
+* True label vs predicted label
+* Predicted probability for the predicted class
+* A one-sentence hypothesis: *Why* might the model have failed here?
+
+Examples of comments:
+
+* "Borderline intensity; looks visually closer to the other class."
+* "Very low contrast; global brightness much darker than typical images."
+* "Possible artifact / text overlay interfering with the pattern."
+
+Arrange these into a small figure (`misclassified_gallery.png`) or a simple table in `README_week2.md`.
+
+This kind of **qualitative error analysis** will be revisited in Week 7 when we study thresholds and high-confidence errors more systematically.
+
+---
+
+### 2.7 What to Write in `README_week2.md`
+
+Aim for **0.5–1 page** with clear structure. A suggested template:
+
+1. **Dataset recap (2–4 bullets)**
+
+   * Class balance
+   * Any noticeable artifacts or quirks
+2. **Baseline comparison (short paragraph + table)**
+
+   * Mention which model is stronger and any over/underfitting signs
+3. **Calibration snapshot (3–5 sentences)**
+
+   * ECE value(s), one or two key observations from the reliability diagram
+   * If you tried TS, one sentence on how ECE changed and what stayed the same (e.g., AUROC)
+4. **Error analysis (bulleted list)**
+
+   * 3–5 bullet points summarizing what the misclassified examples suggest about model limitations or dataset challenges
+
+Keep the tone **lab notebook + mini-report**: clear, honest, and focused on what you learned, not just the numbers.
+
+---
+
+### 2.8 Checkpoint: Are You Ready for Week 3?
+
+You are ready to move on when:
+
+* [ ] You can **describe your dataset** (class balance and typical appearances).
+* [ ] You have **two working supervised baselines** with recorded metrics.
+* [ ] You’ve generated at least one **reliability diagram** and an ECE value.
+* [ ] You have looked at **actual misclassified images** and written down at least a few observations.
+
+These pieces will be directly reused when we compare `--finetune all`, augmentations (Week 3), and SSL representations (Weeks 4–6).
 
 ---
 
