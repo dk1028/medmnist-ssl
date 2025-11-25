@@ -1,4 +1,5 @@
 **Dataset Recap:**
+
 Breastmnist is the smaller dataset of the 2, split values being (train, val, test): 546, 78, 156
 Within that the specific label values are (Class 0: Malignant, Class 1: Benign):
 | Split | Class 0 | Class 1 | Total |
@@ -15,6 +16,7 @@ Visual differences:
 * Malignant samples often featured dark pixels from the bottom of the sample converging to a point in the center of the sample.
 
 **Baseline Comparison**
+
 Models:
 This week I did several runs with a multitude of changes to improve the performance of both models. My baseline run from this week without any changes: 
 | Model    | Accuracy | AUROC  |
@@ -43,12 +45,14 @@ likely that ResNet18’s deeper architecture and greater capacity allow it to ca
 * ResNet18 is far better calibrated, with its high AUROC closely matching its strong accuracy, indicating more reliable confidence in its predictions.
 
 **Calibration Snapshot**
+
 * ResNet18 is generally well-calibrated, with low ECE values (≈0.056–0.081).
 * Low-confidence bins have too few samples to be meaningful.
 * In mid-confidence regions the model is slightly underconfident, with accuracy exceeding predicted probability.
 * High-confidence bins (0.8–1.0), where most predictions lie, align closely with the diagonal, indicating strong calibration where it matters most.
 
 **Error Analysis**
+
 * Most errors are false negatives, usually lighter malignant images lacking typical malignant texture.
 * Rare false positives tend to be unusually dark benign images.
 * The model appears sensitive to the overall proportion of light vs. dark pixels.
