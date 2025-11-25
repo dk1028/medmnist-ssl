@@ -50,6 +50,8 @@ likely that ResNet18’s deeper architecture and greater capacity allow it to ca
 * Low-confidence bins have too few samples to be meaningful.
 * In mid-confidence regions the model is slightly underconfident, with accuracy exceeding predicted probability.
 * High-confidence bins (0.8–1.0), where most predictions lie, align closely with the diagonal, indicating strong calibration where it matters most.
+* The SmallCNN is noticeably under-confident.
+* Most predictions fall into mid-confidence bins (around 0.4–0.7), but the accuracy in these bins is generally higher than the predicted confidence, meaning the model is performing better than it “believes.”
 
 **Error Analysis:**
 
