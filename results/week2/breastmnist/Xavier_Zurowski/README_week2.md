@@ -15,7 +15,7 @@ Visual differences:
 * Dark holes were present in both cases, malignant cases tended to have holes that were less circular, instead featuring jagged edges.
 * Malignant samples often featured dark pixels from the bottom of the sample converging to a point in the center of the sample.
 
-**Baseline Comparison**
+**Baseline Comparison:**
 
 Models:
 This week I did several runs with a multitude of changes to improve the performance of both models. My baseline run from this week without any changes: 
@@ -44,14 +44,14 @@ likely that ResNet18’s deeper architecture and greater capacity allow it to ca
 * SmallCNN appears underconfident: its low AUROC relative to accuracy suggests poorly calibrated probability estimates
 * ResNet18 is far better calibrated, with its high AUROC closely matching its strong accuracy, indicating more reliable confidence in its predictions.
 
-**Calibration Snapshot**
+**Calibration Snapshot:**
 
 * ResNet18 is generally well-calibrated, with low ECE values (≈0.056–0.081).
 * Low-confidence bins have too few samples to be meaningful.
 * In mid-confidence regions the model is slightly underconfident, with accuracy exceeding predicted probability.
 * High-confidence bins (0.8–1.0), where most predictions lie, align closely with the diagonal, indicating strong calibration where it matters most.
 
-**Error Analysis**
+**Error Analysis:**
 
 * Most errors are false negatives, usually lighter malignant images lacking typical malignant texture.
 * Rare false positives tend to be unusually dark benign images.
