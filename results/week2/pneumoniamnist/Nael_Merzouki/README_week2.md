@@ -27,7 +27,7 @@ resnet18 is larger than smallcnn it can outperform in those metrics.
 - The ECE is consistently ~0.25 which pretty high (so model is confidence and accuracy differs significantly).
 - The biggest mismatches happen at the higher confidence ends.
 
-Note: I haven’t tried temperature scaling yet b/c of time constraints, but I’m interested to do that in Week 5/6 because it might help with this overconfidence.
+Note: I haven’t tried temperature scaling yet b/c of time constraints, but I’m interested to try that after exam week since it might help with this overconfidence.
 
 
 ## 4. Error Analysis
