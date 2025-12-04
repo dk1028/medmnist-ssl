@@ -442,14 +442,359 @@ These pieces will be directly reused when we compare `--finetune all`, augmentat
 
 ### Week 3 — Finetune-All & Light Augmentations
 
-**Do:**
+> **Theme:** "Same backbone, different training regimes." This week you will (1) compare **head-only** vs **finetune-all** ResNet-18, and (2) run a **small augmentation ablation** that is realistic for your modality.
 
-* Compare `resnet18 --finetune head` vs `--finetune all`.
-* Light augmentation ablation (2–3 variants) appropriate to modality.
+All work stays on **your assigned dataset** (`breastmnist` or `pneumoniamnist`).
 
-**Submit (week3/…):**
+---
 
-* Learning curves (train/val), ablation table (variant → AUROC), short note on over/underfitting.
+## 3.1 Goals
+
+By the end of Week 3, you should be able to:
+
+1. Run **two ResNet-18 regimes** on your dataset:
+
+   * **Head-only** (frozen backbone, train classifier head) — your Week 2 baseline.
+   * **Finetune-all** (all layers trainable).
+2. Add **light, medically reasonable data augmentations** on the **train** split only.
+3. Read **learning curves** (train vs val) and diagnose **overfitting / underfitting**.
+4. Decide on a **recommended supervised baseline config** that we will carry into SSL (Weeks 4–6).
+
+> Think of Week 3 as: "Which supervised setup should we trust before we invest time in SSL pretraining?"
+
+---
+
+## 3.2 What We Assume from Weeks 1–2
+
+Before starting Week 3, you should already have (on your assigned dataset):
+
+* A working **data pipeline** (MedMNIST loader, DataLoader, transforms).
+* At least **two supervised baselines** from Week 2:
+
+  * `smallcnn`
+  * `resnet18` with **head-only** training (backbone frozen)
+* Basic metrics on the **test** set:
+
+  * Accuracy, AUROC (and maybe ECE)
+* At least one **reliability diagram** and some notes about calibration.
+
+If any of these are missing or broken, fix them first; you will reuse this code for multiple weeks.
+
+---
+
+## 3.3 Week 3 Folder & Expected Artifacts
+
+Create your personal Week 3 folder:
+
+```text
+results/week3/<dataset_key>/<your_name>/
+```
+
+Inside, we expect something like:
+
+```text
+results/week3/<dataset_key>/<your_name>/
+  ├─ metrics_resnet18_head.json          # head-only (you can copy from Week 2)
+  ├─ metrics_resnet18_all_basic.json     # finetune-all, basic transforms
+  ├─ metrics_resnet18_all_augA.json      # finetune-all, augmentation config A
+  ├─ metrics_resnet18_all_augB.json      # (optional) augmentation config B
+  ├─ curves_resnet18_head.png            # train/val curves
+  ├─ curves_resnet18_all_basic.png
+  ├─ curves_resnet18_all_augA.png
+  ├─ aug_ablation_table.md (optional)    # or put the table directly in README
+  └─ README_week3.md                     # 0.5–1.5 page summary
+```
+
+> As always, **do not commit** raw `runs/` or very large logs. Only commit **curated** metrics, plots, and a short README.
+
+---
+
+## 3.4 Step 1 — Baseline: ResNet-18 Head-Only (Frozen Backbone)
+
+We keep the Week 2 **head-only** ResNet-18 as our reference point.
+
+1. Either **reuse** your Week 2 head-only run or **re-run** it with the same hyperparameters:
+
+   ```bash
+   # Example: head-only finetuning (backbone frozen)
+   python -m src.train_medmnist \
+     --dataset <dataset_key> \
+     --model resnet18 \
+     --finetune head \
+     --epochs 8
+   ```
+
+2. Make sure you have a **metrics JSON** (test set) with at least:
+
+   * `acc`, `auroc` (and `ece` if available)
+
+3. If your training script logs **per-epoch metrics** (train/val loss or accuracy), use them to plot a simple **learning curve**:
+
+   * x-axis: epoch
+   * y-axis: accuracy or loss
+   * one line for **train**, one for **val**
+
+4. Save the plot as:
+
+   ```text
+   curves_resnet18_head.png
+   ```
+
+If your current script does not save per-epoch metrics yet, you can:
+
+* Use the notebook version and collect metrics in Python lists, or
+* Add a few lines in `train_medmnist.py` to append `train_loss`, `val_loss`, `val_acc` to a list and save them as a small `.json` or `.csv`.
+
+> We do **not** need a perfectly engineered logging system – a small dictionary or CSV is already useful.
+
+---
+
+## 3.5 Step 2 — Finetune-All ResNet-18 (All Layers Trainable)
+
+Now we allow **all ResNet-18 layers** to update, not just the final classifier head.
+
+Conceptually:
+
+* **Head-only**: backbone parameters are **frozen**; only the last linear layer is trained.
+* **Finetune-all**: backbone parameters are **unfrozen**; the entire network learns from MedMNIST.
+
+In code, this usually means something like:
+
+```python
+# Pseudo-code sketch (do not copy blindly)
+for param in backbone.parameters():
+    param.requires_grad = True  # unfreeze everything
+```
+
+Or in the CLI, you may have a flag like `--finetune all` or simply **omit** `--finetune head` so that all layers train. Use whatever convention your script uses, but:
+
+> **Label the run as `finetune-all` whenever the entire ResNet-18 is trainable.**
+
+Run a finetune-all experiment with the **same basic transforms** you used so far (no new augmentations yet):
+
+```bash
+python -m src.train_medmnist \
+  --dataset <dataset_key> \
+  --model resnet18 \
+  --finetune all \
+  --epochs 8
+```
+
+(Adjust the actual flag names to match your script.)
+
+Save:
+
+* Test metrics → `metrics_resnet18_all_basic.json`
+* Learning curve plot → `curves_resnet18_all_basic.png`
+
+Try to keep **all other hyperparameters** (epochs, batch size, optimizer, LR) the same as in the head-only run, so the comparison is fair.
+
+---
+
+## 3.6 Step 3 — Light, Modality-Aware Data Augmentations
+
+Now we add **small, realistic augmentations** on the **train** split only. The **val/test** splits should **never** use strong augmentations; they must stay as close as possible to the original data.
+
+### 3.6.1 Suggested Augmentations
+
+Below are suggestions. You can adapt them, but keep them **medically plausible**:
+
+* For **PneumoniaMNIST (chest X-ray)**:
+
+  * `RandomHorizontalFlip(p=0.5)`
+  * `RandomRotation(degrees=10)` or `RandomAffine(degrees=10, translate=(0.05, 0.05))`
+  * (Optional) small intensity jitter: `ColorJitter(brightness=0.1, contrast=0.1)`
+  * **Avoid** vertical flips (they invert anatomy) and very large rotations.
+
+* For **BreastMNIST (breast ultrasound)**:
+
+  * `RandomHorizontalFlip(p=0.5)`
+  * `RandomRotation(degrees=10)`
+  * (Optional) slight Gaussian noise or small contrast jitter
+
+Example (PyTorch) for a slightly stronger augmentation config:
+
+```python
+import torchvision.transforms as T
+
+train_transform_augA = T.Compose([
+    T.ToPILImage(),
+    T.Resize(224),
+    T.RandomHorizontalFlip(p=0.5),
+    T.RandomRotation(degrees=10),
+    T.ToTensor(),
+    # Normalize(...) as before
+])
+```
+
+You can define **two** configs:
+
+* **Basic** (what you already used in Week 2): `Resize → ToTensor → Normalize`
+* **AugA**: `Basic + light geometric aug` (flip + small rotation)
+* (Optional) **AugB**: `AugA + very light intensity jitter`
+
+### 3.6.2 Finetune-All + Augmentations
+
+For each augmentation config, run **finetune-all ResNet-18** again:
+
+```bash
+# Example: finetune-all with AugA
+python -m src.train_medmnist \
+  --dataset <dataset_key> \
+  --model resnet18 \
+  --finetune all \
+  --epochs 8 \
+  --train-aug augA   # or a similar flag / config name in your script
+```
+
+Save for each variant:
+
+* Test metrics → `metrics_resnet18_all_augA.json`, `metrics_resnet18_all_augB.json`
+* Learning curves → `curves_resnet18_all_augA.png`, `curves_resnet18_all_augB.png`
+
+> If you only have time for **one** augmentation config, do just **AugA** and label it clearly.
+
+---
+
+## 3.7 Step 4 — Learning Curves & Over/Underfitting
+
+Now compare the learning curves across your variants:
+
+1. For each of the following, inspect `train` vs `val` metrics over epochs:
+
+   * `resnet18_head` (head-only)
+   * `resnet18_all_basic` (all layers, basic transforms)
+   * `resnet18_all_augA` (all layers, with augmentations)
+
+2. Questions to answer (in words, not only numbers):
+
+   * Does **finetune-all** reach higher **train accuracy** than head-only? What about **val accuracy / AUROC**?
+   * Do you see **overfitting**? (for example, train acc → 1.0 but val acc stops improving or gets worse.)
+   * Does **AugA** help reduce overfitting or improve test AUROC slightly?
+   * Is training with augmentations **less stable** (noisy curves) or about the same?
+
+You can place the curves side-by-side in your report, but even a short description is valuable.
+
+---
+
+## 3.8 Step 5 — Augmentation Ablation Table
+
+Summarize your Week 3 runs in a small table. Example:
+
+```markdown
+| Model / Variant            | Finetune | Train Aug   | Test Acc | Test AUROC | Notes               |
+|--------------------------- |----------|------------ |---------:|----------: |---------------------|
+| ResNet-18 (head-only)      | head     | basic       |   0.76   |    0.84    | Week 2 baseline     |
+| ResNet-18 (all, basic)     | all      | basic       |   0.78   |    0.85    | mild overfitting    |
+| ResNet-18 (all, AugA)      | all      | flip+rot    |   0.79   |    0.86    | best test AUROC     |
+| ResNet-18 (all, AugB)      | all      | flip+rot+jit|   0.78   |    0.85    | similar, more noisy |
+```
+
+You do **not** need to match these numbers; they are just an example of format and level of commentary.
+
+If you have ECE or calibration plots for any of these variants, you can add an extra column or a sentence in the notes (optional for Week 3).
+
+---
+
+## 3.9 What to Write in `README_week3.md`
+
+Aim for **0.5–1.5 pages** (short but structured). Suggested outline:
+
+1. **Setup Recap (3–5 bullets)**
+
+   * Your dataset and class balance.
+   * Which transforms you used before Week 3 (basic pipeline).
+
+2. **Head-Only vs Finetune-All (paragraph + mini-table)**
+
+   * 3–5 sentences comparing metrics and curves.
+   * Include a small table with at least: `Variant`, `Test Acc`, `Test AUROC`.
+
+3. **Augmentation Ablation (paragraph + table)**
+
+   * Describe each augmentation config (1–2 lines each).
+   * Include the ablation table from Section 3.8.
+   * Comment on which config seems best and why.
+
+4. **Learning Curve Interpretation (3–6 sentences)**
+
+   * Mention any clear signs of overfitting/underfitting.
+   * Note if augmentations stabilize or destabilize training.
+
+5. **Takeaways for SSL (2–3 bullets)**
+
+   * Which supervised setup you will treat as your **reference** going forward.
+   * Any surprises (e.g., small improvements, large gains, or no effect).
+
+Keep the tone like a **lab notebook + mini-report**: honest, descriptive, and focused on what you learned.
+
+---
+
+## 3.10 Dataset-Specific Focus: PneumoniaMNIST vs BreastMNIST
+
+In Week 3, **both teams follow the same overall pipeline** (head-only vs finetune-all, light augmentations, learning curves). Here we spell out the parts where the **focus differs by dataset**. Only include these in your `README_week3.md` if they are relevant to **your** dataset.
+
+### 3.10.1 PneumoniaMNIST Team (Chest X-ray)
+
+For the PneumoniaMNIST group, emphasize:
+
+* **Augmentations to prioritize**
+
+  * Start from: `RandomHorizontalFlip(p=0.5)` + small `RandomRotation(degrees=10)`.
+  * You may also try **very light translation** (for example, `translate=(0.05, 0.05)`) to mimic slight changes in patient positioning.
+  * Be careful with intensity jitter: use **small** `ColorJitter` only, and report if it hurts or helps.
+  * Explicitly **avoid vertical flips** or huge rotations that would break the anatomical orientation.
+
+* **Dataset-specific questions to answer** (in README):
+
+  * Does finetune-all + augmentations mainly improve **AUROC** or **calibration** (ECE), or both?
+  * Do augmentations reduce obvious overfitting (train acc → 1.0 while val acc stagnates)?
+  * When you visually inspect a few high-confidence **false positives / false negatives**, do they look like borderline cases or clear mistakes?
+
+* **Optional Pneumonia-specific note**
+
+  * If you have time, briefly comment on whether the model seems to be **over-calling pneumonia** (many false positives) or **missing pneumonia** (false negatives), since this trade-off is clinically important.
+
+Keep these comments short (3–6 sentences) and place them in a small subsection of your `README_week3.md` titled, for example, "PneumoniaMNIST-specific observations".
+
+### 3.10.2 BreastMNIST Team (Breast Ultrasound)
+
+For the BreastMNIST group, the focus is slightly different:
+
+* **Augmentations to prioritize**
+
+  * Geometric: `RandomHorizontalFlip(p=0.5)`, `RandomRotation(degrees=10)` are usually safe.
+  * You may try **very light Gaussian noise** or a tiny contrast jitter to mimic ultrasound variability.
+  * Avoid extreme changes (large noise, heavy blurring, strong contrast shifts) that might erase subtle lesions.
+
+* **Dataset-specific questions to answer** (in README):
+
+  * Does **finetune-all** help more for BreastMNIST than it did for PneumoniaMNIST (according to class slides / shared results)? This dataset is small and noisy, so backbone adaptation might matter more.
+  * Do augmentations **stabilize** training (less noisy curves) or mainly act as regularization (slightly lower train acc but better val metrics)?
+  * Are the model’s errors mainly on **very dark/low-contrast** cases, or on images where lesions are small and hard to see?
+
+* **Optional Breast-specific note**
+
+  * If you plot a few misclassified examples, add 2–3 bullets about what might make them hard (for example, speckle noise, unclear boundaries) and whether different augmentations might help.
+
+You can collect these under a small subsection such as "BreastMNIST-specific observations" in your `README_week3.md`.
+
+---
+
+## 3.11 Week 3 Checklist
+
+You are ready for Week 4 (SSL pretraining) when:
+
+* [ ] You have **head-only** and **finetune-all** ResNet-18 runs with metrics on your dataset.
+* [ ] You have tried at least **one** realistic augmentation config on the train split.
+* [ ] You have at least **one learning curve plot** per main variant.
+* [ ] You wrote `README_week3.md` summarizing:
+
+  * Supervised variants tested
+  * How augmentations affected performance
+  * Which configuration you recommend as your **baseline** going into SSL.
+
+These decisions will help interpret later results when we compare **SSL encoders** vs **purely supervised** models and analyze label efficiency in Weeks 4–6.
 
 ---
 
