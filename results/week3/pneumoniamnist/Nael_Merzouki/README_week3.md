@@ -49,18 +49,20 @@ Reference point will be resnet-all-basic metrics. Will only note notable increas
 
 # 4. Learning Curve Interpretation
 
+We will not comment too much on AugB and AugC curves since they are not too interesting.
+
 **Head-only:** Showed relatively stable but limited learning. Both training and validation metrics stagnated quickly, suggesting that the frozen backbone features limit the model's learning capabilities for this dataset. Similar growth for both train and val metrics. Does not seem to be overfitting, but performance was capped.
 
-**Finetune-all:** (basic) Showed strong learning capacity. The model achieved near-perfect train and val accuracy with excellent AUROC (~0.99), implying the backbone successfully adapted to the training and val set. Train loss and ECE converged to zero while val did not, suggesting mild level of overfitting to the train set, though overall performance remains relatively high. The spikes and difference in smoothness of the growth curves reinforce overfitting claim (train curves remain smooth, val curves contain spikes).
+**Finetune-all:** (basic) Showed strong learning capacity. The model achieved near-perfect train and val accuracy with excellent AUROC (~0.99), implying the backbone successfully adapted to the training and val set. Train loss and ECE converged to zero while val did not, suggesting mild level of overfitting to the train set, though overall performance remains relatively high. The spikes and difference in smoothness of the growth curves reinforce overfitting claim (train curves remain smooth, val curves contain spikes). Same trends happen with AugB, AugA (less severely), AugC (even less severely).
 
-**Finetune-all + augD**: Clear smoothness of the validation growth curves with much less and smaller spikes. Fast learning rate and lower convergence for accuracy and ECE. Overfitting her seems much less defined. 
+**Finetune-all + augD**: Clear smoothness of the validation growth curves with much less and smaller spikes. Fast learning rate and better convergence for loss, accuracy and ECE. Overfitting here is much less defined. 
 
-Augmentation D seems to have heavily stabilized learning rate and decrease the level of overfitting.
+Augmentation D seems to have heavily stabilized learning rate and decrease the level of overfitting. From AugC and AugD curves, we notice the effect of normalization specifically on smoothing out the growth curves.
 
 ## 5. Takeaways for SSL (Weeks 4-6)
 
 **Reference Setup**: I will use 'resnet18-all-AugD' as the reference for the next weeks. It achieves the best test results and shows stable training with reasonable generalization.
 
-**Surprises**: 
+**Surprises**: Color jitter transformation seems to generally worsen the smoothness of the learning curves (augA -> augB, and augC -> augD for loss & acc) but overfitting levels do not seem to reflect that. Perhaps the smoothness of the learning curves is not enough to diagnose overfitting or maybe this is just a special case?
 
 Note: I think my week2 ECE was incorrect since I consistently got much lower results when rerunning with torchmetrics.BinaryCalibrationError().
