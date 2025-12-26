@@ -38,7 +38,7 @@ Reference point will be resnet-all-basic metrics. Will only note notable increas
 * **AugC** (AugA + Normalization (same as ImageNet)): Slight decrease in train loss, ECE and increase in train acc from AugB. Lower train ECE and loss than AugA. Similar test metrics to AugA.
 * **AugD** (AugB + Normalization (same as ImageNet)): Best test metrics of all augmentations. Similar train metrics to AugC.
 
-**Best Configuration**: AugD seems to be the best configuration. It gets the best test metrics (especially accuracy) by considerable margin (which is what matters in practice) and decreases model performance on training set, making overall performance more consistent and decreasing level of overfitting.
+**Best Configuration**: AugD seems to be the best configuration. Although learning curves of AugC might seem more appealing, this is not reflected in the evaluation metrics. It gets the best test metrics (especially accuracy) by considerable margin (which is what matters in practice) and decreases model performance on training set, making overall performance more consistent and decreasing level of overfitting.
 
 | Model / Variant            | Finetune | Train Aug   | Test Acc | Test AUROC | Notes               |
 |--------------------------- |----------|------------ |---------:|----------: |---------------------|
