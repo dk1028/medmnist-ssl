@@ -55,7 +55,7 @@ We will not comment too much on AugB and AugC curves since they are not too inte
 
 **Finetune-all:** (basic) Showed strong learning capacity. The model achieved near-perfect train and val accuracy with excellent AUROC (~0.99), implying the backbone successfully adapted to the training and val set. Train loss and ECE converged to zero while val did not, suggesting mild level of overfitting to the train set, though overall performance remains relatively high. The spikes and difference in smoothness of the growth curves reinforce overfitting claim (train curves remain smooth, val curves contain spikes). Same trends happen with AugB, AugA (less severely), AugC (even less severely).
 
-**Finetune-all + augD**: Clear smoothness of the validation growth curves with much less and smaller spikes. Fast learning rate and better convergence for loss, accuracy and ECE. Overfitting here is much less defined. 
+**Finetune-all + augD**: Clear smoothness of the validation growth curves with much less and smaller spikes. Fast learning rate and better convergence for loss, accuracy and ECE. Unusual fluctuation at val accuracy curve at epoch 5 is assumed to be an outlier caused by variability. Overfitting here is much less defined. 
 
 Augmentation D seems to have heavily stabilized learning rate and decrease the level of overfitting. From AugC and AugD curves, we notice the effect of normalization specifically on smoothing out the growth curves.
 
