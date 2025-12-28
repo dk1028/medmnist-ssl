@@ -16,8 +16,8 @@
 # **Augmentation Ablation**
 * **AugA:** Used transforms T.RandomHorizontalFlip(p=0.5) and T.RandomRotation(degrees=10). These geometric augmentations slightly reduce test accuracy (roughly 3%) but improve calibration as ECE drops to 0.05. AUROC remains comparable, suggesting model ranking remains strong. Train accuracy alse decreases slighly, indicating a reduction in overfitting.
 * **AugB:** Used transforms in AugA as well as T.ColorJitter(contrast=0.1). Adding color jitter harms performance, likely because low contrast lesions are removed from images. Test accuracy and AUROC drop, the acocompanying rise in ECE shows wekened calibration.
-| Model Variant            | Finetune | Train Aug | Test Acc | Test AUROC | Test ECE | Notes                                    |
-|--------------------------|----------|-----------|---------:|-----------:|---------:|-----------------------------------------|
+| Model Variant            | Finetune | Train Aug | Test Acc | Test AUROC | Test ECE | Notes                                   |
+|--------------------------|----------|-----------|---------|-----------|---------|-----------------------------------------|
 | ResNet-18 (all, basic)   | all      | basic     | 0.9103   | 0.9211     | 0.0687   | Reference point, mild overfitting       |
 | ResNet-18 (all, AugA)    | all      | flip+rot  | 0.8782   | 0.9121     | 0.0504   | Slightly lower test acc, improved calibration (ECE) |
 | ResNet-18 (all, AugB)    | all      | flip+rot+jit | 0.8526 | 0.8523     | 0.0788   | Lowest test acc, AUROC dropped, minor calibration degradation |
