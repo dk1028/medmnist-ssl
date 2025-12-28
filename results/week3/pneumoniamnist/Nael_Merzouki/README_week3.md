@@ -25,7 +25,7 @@
 | ResNet-18 (head-only)      | 0.7628   | 0.8371     | 0.1285     |
 | ResNet-18 (all, basic)     | 0.8670   | 0.9546     | 0.1306     |
 
-The model reaches perfect accuracy on train set while it performs at 87% accuracy on test set which indicates mild overfitting. Such decrease in performance are noticeable in AUROC and ECE too, indicating overfitting. It still significantly outperforms the head-only model on the test set and is thus preferred in practice. Augmentations below show a decrease in overfitting.
+The model reaches perfect accuracy on train set while it performs at 87% accuracy on test set which indicates mild overfitting. Such decrease in performance are noticeable in AUROC and ECE too, reinforcing this claim. It still significantly outperforms the head-only model on the test set and is thus preferred in practice. Augmentations below show a decrease in overfitting.
 
 ---
 
