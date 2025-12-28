@@ -1,4 +1,4 @@
-Note: Metrics are averaged per epoch. Above scores were recorded at the 8th epoch for train & val sets.
+Note: Metrics are averaged per epoch. Below scores were recorded at the 8th epoch for train & val sets.
 
 Setup: resnet18, AdamW, 8 epochs:
  resnet18-head:
