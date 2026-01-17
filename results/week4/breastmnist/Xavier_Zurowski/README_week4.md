@@ -37,6 +37,8 @@ Runs using only Gaussian noise or only ColorJitter reached slightly lower final 
 Overall, the loss trends indicate stable contrastive learning, with the model successfully grouping augmented views while pushing apart other samples.
 From these results, we can infer which augmentations preserve meaningful ultrasound features versus those that may add excessive variability, guiding selection of realistic transforms for SSL. The best run could be chosen by the lowest final loss or by downstream linear evaluation of class separability.
 
+**Note**
+*Encoder weights were saved as float16 to allow the file to fall under GitHubs 25mb limit
 
 
 
