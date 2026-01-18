@@ -1,0 +1,13 @@
+{
+    "method": "simclr-lite",
+    "dataset": "breastmnist",
+    "backbone": "resnet18",
+    "proj_dim": 128,
+    "batch_size": 128,
+    "epochs": 50,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "augmentations": "RandomResizedCrop+Flip+Rot+Jitter, GussianNoise",
+    "tau": 0.2,
+    "seed": 42
+}
