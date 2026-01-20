@@ -1,7 +1,7 @@
 # **Method Choice**
 For my SSL pipeline, I implemented SimCLR-lite contrastive learning model made up of a ResNet18 encoder using NT-Xent loss on pairs of augmented views of the same image. 
 This method was selected because it is conceptually simple, works with a single encoder, and achieves strong results. 
-A lite variant was used since the encoder is ResNet18 (smaller than ResNet50, which is used in the original SimCLR paper), keeping training tractable while preserving the contrastive learning objective.
+A lite variant was used since the encoder is ResNet18 (smaller than ResNet50, which is used in the original SimCLR paper), keeping training tractable while preserving the contrastive learning objective. All runs were conducted on the train split of the BreastMNIST dataset.
 
 # **Augmentations**
 The model makes use of several augmentations to generate augmented pairs of the same image, which the model then trains on:
@@ -24,8 +24,25 @@ BreastMNIST images exhibit low contrast and fine-grained texture patterns typica
 * Run4: GaussianBlur(kernel_size=3, sigma=(0.1, 0.5)) (No Jitter)
 * Run5: ColorJitter(brightness=0.05, contrast=0.05) (No Gaussian augmentation)
 
+| Run | Transforms | MinLoss |Loss at epoch 50 |
+|-----|------------|------------------|-----------------|
+| Run1 | crop+flip+rot+jit+GaussianNoise | 1.1249 | 1.1423 |
+| Run2 | crop+flip+rot+GaussianNoise | 1.1268 | 1.1403 |
+| Run3 | crop+flip+rot+jit+GaussianBlur| 1.1409 | 1.1409 |
+| Run4 | crop+flip+rot+GaussianBlur | 1.1221 | 1.1410 |
+| Run5 | crop+flip+rot+jit | 1.1374 | 1.1374 |
+
+All other parameters were maintained between runs.
+
 # **HyperParameter**
-Followed the recommended hyperparameter for week4. Used SEED=42, EPOCHS=50, BATCH_SIZE=128, LR=1e-3, WEIGHT_DECAY=1e-4, TAU=0.2, for all runs.
+Followed the recommended hyperparameters for week4. Used 
+SEED=42, 
+EPOCHS=50, 
+BATCH_SIZE=128, 
+LR=1e-3, 
+WEIGHT_DECAY=1e-4, 
+TEMPERATURE=0.2, 
+for all runs.
 The encoder and projection head are trained jointly from the start. No learning-rate scheduling or explicit freezing are used this week.
 
 # **Training Behavior**
@@ -34,8 +51,8 @@ Training is stable throughout, with only minor oscillations in later epochs, ind
 
 Across the five runs with different augmentations, the NT-Xent loss steadily decreased over epochs, converging around 1.12–1.25 in the final epochs.
 Runs using only Gaussian noise or only ColorJitter reached slightly lower final losses (~1.14–1.15) than combinations of augmentations, suggesting that adding multiple augmentations did not necessarily improve positive pair alignment for BreastMNIST.
-Overall, the loss trends indicate stable contrastive learning, with the model successfully grouping augmented views while pushing apart other samples.
-From these results, we can infer which augmentations preserve meaningful ultrasound features versus those that may add excessive variability, guiding selection of realistic transforms for SSL. The best run could be chosen by the lowest final loss or by downstream linear evaluation of class separability.
+Overall, the loss trends indicate stable contrastive learning, with the model successfully grouping augmented views while pushing apart other samplesand the best run should be selected via downstream evaluation in weeks 5-7
+From these results, we can't infer which augmentations preserve meaningful ultrasound features versus those that may add excessive variability, guiding selection of realistic transforms for SSL. 
 
 **Note**
 *Encoder weights were saved as float16 to allow the file to fall under GitHubs 25mb limit
