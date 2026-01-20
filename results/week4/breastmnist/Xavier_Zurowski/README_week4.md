@@ -46,8 +46,8 @@ for all runs.
 The encoder and projection head are trained jointly from the start. No learning-rate scheduling or explicit freezing are used this week.
 
 # **Training Behavior**
-The NT-Xent loss decreases rapidly during the first few epochs (≈3.46 → ≈2.0), followed by a slower, steady decline as training progresses. After approximately 25–30 epochs, improvements become marginal, with the loss converging around 1.15 by epoch 50.
-Training is stable throughout, with only minor oscillations in later epochs, indicating no representation collapse and successful contrastive learning.
+The NT-Xent loss decreases rapidly during the first few epochs (≈3.46 → ≈2.0), followed by a slower, steady decline as training progresses. After approximately 25–30 epochs, improvements become marginal, with the loss converging around 1.14 by epoch 50.
+Training is stable throughout, with only minor oscillations in later epochs, suggesting no representation collapse and successful contrastive learning.
 
 Across the five runs with different augmentations, the NT-Xent loss steadily decreased over epochs, converging around 1.12–1.25 in the final epochs.
 Runs using only Gaussian noise or only ColorJitter reached slightly lower final losses (~1.14–1.15) than combinations of augmentations, suggesting that adding multiple augmentations did not necessarily improve positive pair alignment for BreastMNIST.
