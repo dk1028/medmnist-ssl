@@ -1,3 +1,5 @@
+Note: I wasn't able to commit my code or the .pt files as they were too large
+
 Dataset: PneumoniaMNIST
 Backbone: ResNet-18 (ImageNet-pretrained = True)
 Method: SimCLR-lite (NT-Xent)
