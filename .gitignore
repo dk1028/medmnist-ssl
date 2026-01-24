@@ -4,3 +4,11 @@ __pycache__/
 *.pt
 *.png
 *.json
+
+results/
+*.pt
+*.pth
+*.ckpt
+*.zip
+.DS_Store
+.DS_Store
