@@ -33,4 +33,8 @@ Linear probes were trained using 5% and 10% of labeled data, and evaluated on th
 
 ## Analysis
 
-The linear probe significantly outperforms the supervised head-only baseline in AUROC, particularly at 10% labels, indicating that the SSL encoder learns discriminative representations beyond what is achievable with limited supervised training alone. Although fully supervised training achieves the best overall performance, the linear probe results demonstrate strong label efficiency and validate the effectiveness of the SSL pretraining pipeline. The performance gap between 5% and 10% further highlights the benefits of even modest increases in labeled data when using high-quality SSL representations.
+## Analysis  
+The linear probe significantly outperforms the supervised head-only baseline in AUROC, particularly at 10% labels, indicating that the SSL encoder learns discriminative representations beyond what is achievable with limited supervised training alone. Note that the supervised head-only model collapses to predicting the majority class and does not meaningfully learn feature representation. Hence, comparisons based on accuracy and/or AUROC are difficult to interpret, since the baseline performance reflects the collapse rather than true learning. That being said, the linear probe does not collapse to the majority class, therefore providing a more meaningful measure of the quality of the SSL representations.  
+
+Although fully supervised training achieves the best overall performance, the linear probe results demonstrate strong label efficiency and validate the effectiveness of the SSL pretraining pipeline. The performance gap between 5% and 10% further highlights the benefits of even modest increases in labeled data when using high-quality SSL representations.
+
