@@ -1,0 +1,8 @@
+{
+  "label_fraction": 0.1,
+  "train_size": 470,
+  "test_acc": 0.7932692307692307,
+  "test_auroc": 0.9275586237124699,
+  "test_ece": 0.2366854330369582,
+  "best_val_auroc": 0.9541654765305151
+}

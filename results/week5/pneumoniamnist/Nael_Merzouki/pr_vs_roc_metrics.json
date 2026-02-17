@@ -1,0 +1,22 @@
+{
+  "metrics": {
+    "roc_auc": 0.9275586237124699,
+    "pr_auc": 0.9509457135639695,
+    "sensitivity_at_05": 0.9846153846153847,
+    "specificity_at_05": 0.47435897435897434,
+    "precision_at_05": 0.757396449704142
+  },
+  "class_distribution": {
+    "n_positive": 390,
+    "n_negative": 234,
+    "imbalance_ratio": 1.6666666666666667,
+    "positive_class_proportion": 0.625
+  },
+  "confusion_matrix_at_threshold_05": {
+    "true_positives": 384,
+    "false_positives": 123,
+    "true_negatives": 111,
+    "false_negatives": 6
+  },
+  "interpretation": "PR-AUC (0.9509) is more relevant than ROC-AUC (0.9276) for this imbalanced dataset (ratio=1.6667). PR focuses on minority class (pneumonia) performance, while ROC is dominated by majority class (healthy) representation. For medical diagnosis, minimizing false negatives requires careful attention to precision-recall trade-offs, which PR curves visualize."
+}

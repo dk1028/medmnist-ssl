@@ -1,0 +1,4 @@
+Model,Train Size,Accuracy,AUROC,ECE
+5pct,234,0.7853,0.8963,0.2427
+10pct,470,0.7933,0.9276,0.2367
+supervised_100pct,4708,0.8413,0.9484,0.2942

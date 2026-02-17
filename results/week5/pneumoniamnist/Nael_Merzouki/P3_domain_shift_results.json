@@ -1,0 +1,71 @@
+{
+  "clean_metrics": {
+    "accuracy": 0.7932692307692307,
+    "auroc": 0.9275586237124699,
+    "ece": 0.23668540240480349
+  },
+  "perturbation_results": {
+    "clean": {
+      "accuracy": 0.7932692307692307,
+      "auroc": 0.9275586237124699,
+      "ece": 0.23668540240480349
+    },
+    "gaussian_noise": {
+      "accuracy": 0.7932692307692307,
+      "auroc": 0.840554459785229,
+      "ece": 0.2204672860650298
+    },
+    "brightness_increase": {
+      "accuracy": 0.8365384615384616,
+      "auroc": 0.9233727810650888,
+      "ece": 0.2143257096565018
+    },
+    "brightness_decrease": {
+      "accuracy": 0.7307692307692307,
+      "auroc": 0.9284133245671707,
+      "ece": 0.26178777600543046
+    },
+    "contrast_increase": {
+      "accuracy": 0.8477564102564102,
+      "auroc": 0.9258711374095989,
+      "ece": 0.22914400792274714
+    },
+    "contrast_decrease": {
+      "accuracy": 0.7019230769230769,
+      "auroc": 0.9264738110891957,
+      "ece": 0.277926258289088
+    }
+  },
+  "robustness_deltas": {
+    "gaussian_noise": {
+      "delta_acc": 0.0,
+      "delta_auroc": -0.08700416392724086,
+      "delta_ece": -0.016218116339773686
+    },
+    "brightness_increase": {
+      "delta_acc": 0.04326923076923084,
+      "delta_auroc": -0.004185842647381088,
+      "delta_ece": -0.022359692748301685
+    },
+    "brightness_decrease": {
+      "delta_acc": -0.0625,
+      "delta_auroc": 0.0008547008547008517,
+      "delta_ece": 0.025102373600626976
+    },
+    "contrast_increase": {
+      "delta_acc": 0.054487179487179516,
+      "delta_auroc": -0.0016874863028709663,
+      "delta_ece": -0.007541394482056346
+    },
+    "contrast_decrease": {
+      "delta_acc": -0.09134615384615385,
+      "delta_auroc": -0.0010848126232742006,
+      "delta_ece": 0.04124085588428453
+    }
+  },
+  "config": {
+    "noise_std": 0.15,
+    "brightness_delta": 0.2,
+    "contrast_factor": 0.3
+  }
+}
