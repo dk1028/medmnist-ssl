@@ -64,7 +64,7 @@
 
 **Label Fraction Effect (5% -> 10%):**
 
-Increasing labeled data from 234 to 470 samples (+100%) improved validation AUROC from 0.9318 to 0.9542 (+2.24 points). Test AUROC gained +3.13 points (0.8963 → 0.9276), demonstrating consistent label efficiency. Test accuracy improvement was modest (+0.80%), suggesting the model already captured useful representations at 5% but benefited from larger decision boundary refinement at 10%.
+Increasing labeled data from 234 to 470 samples (+100%) improved validation AUROC from 0.9318 to 0.9542 (+2.24 points). Test AUROC gained +3.13 points (0.8963 -> 0.9276), demonstrating consistent label efficiency. Test accuracy improvement was modest (+0.80%), suggesting the model already captured useful representations at 5% but benefited from larger decision boundary refinement at 10%.
 
 **Gap vs Supervised Baseline:**
 
@@ -94,7 +94,7 @@ At high recall (>90%), the PR curve maintains high precision (>93%), indicating 
 
 - **Domain Shift Sensitivity:** Gaussian noise (σ=0.15) caused largest AUROC drop (−8.7%), while brightness/contrast perturbations minimally affected AUROC (−0.4% to +0.1%). Hypothesis: ResNet features are robust to photometric variation but sensitive to pixel-level noise introduced by incorrect augmentation assumptions (medical images != natural photos).
 
-- **Model Behavior at High Sensitivity:** 98.46% sensitivity @ threshold 0.5 indicates the model is conservative—it predicts pneumonia for most borderline cases. This bias toward the majority class aligns with training on limited labels; the model defaults to positive class when uncertain.
+- **Model Behavior at High Sensitivity:** 98.46% sensitivity @ threshold 0.5 indicates the model is conservative, i.e. it predicts pneumonia for most borderline cases. This bias toward the majority class aligns with training on limited labels; the model defaults to positive class when uncertain.
 
 - **Specificity Trade-off:** Low specificity (47.44%) reflects precision-recall trade-off under imbalance. Raising decision threshold would improve specificity but reduce recall and increase missed diagnoses. Clinical protocol would determine appropriate threshold.
 
@@ -125,7 +125,7 @@ Perturbation results on SSL 10% probe:
 
 ---
 
-## 7. Possible Updates
+## 7. TO DOs
 
 - **Validation Curves Unavailable:** Training loss and validation AUROC trajectories would help diagnose convergence behavior or overfitting magnitude.
 - **Single Seed Run:** No variance estimate or confidence intervals across multiple runs.
