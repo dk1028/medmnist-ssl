@@ -24,8 +24,8 @@
 - Reliability diagrams: confidence vs accuracy at decision threshold 0.5
 
 **P3 Extra Tasks:**
-1. **Domain Shift Robustness:** Gaussian noise (σ=0.15), brightness ±20%, contrast ±30%
-2. **PR vs ROC Analysis:** On 10% probe; class imbalance ratio 1.67:1
+1. **Domain Shift Robustness:** Gaussian noise (σ=0.15), brightness +/-20%, contrast +/-30%
+2. **PR vs ROC Analysis:** On 10% probe. Class imbalance ratio 1.67:1
 
 ---
 
@@ -82,7 +82,7 @@ The PR-AUC (0.9509) outperforms ROC-AUC (0.9276) by 2.3 percentage points on the
 
 The model achieves 98.46% sensitivity (catches 384/390 pneumonia cases) but only 47.44% specificity (correctly identifies 111/234 healthy). This asymmetry is clinically appropriate: missing pneumonia (false negative) is costly, while false alarms trigger follow-up screening. PR curves preserve this cost asymmetry while ROC obscures it. The gap between PR and ROC suggests imbalance is substantial enough to meaningfully affect metric choice.
 
-At high recall (>90%), the PR curve maintains high precision (>93%), indicating the model confidently identifies most pneumonia cases without excessive false positives. The no-skill baseline precision (62.5%) represents random guessing; the model's actual precision (75.74% @ 0.5 threshold) represents a 21% relative improvement, confirming genuine predictive power beyond class prevalence.
+At high recall (>90%), the PR curve maintains high precision (>93%), indicating the model confidently identifies most pneumonia cases without excessive false positives. The no-skill baseline precision (62.5%) represents random guessing; the model's actual precision (75.74% at 0.5 threshold) represents a 21% relative improvement, confirming genuine predictive power beyond class prevalence.
 
 ---
 
@@ -94,17 +94,13 @@ At high recall (>90%), the PR curve maintains high precision (>93%), indicating 
 
 - **Domain Shift Sensitivity:** Gaussian noise (σ=0.15) caused largest AUROC drop (−8.7%), while brightness/contrast perturbations minimally affected AUROC (−0.4% to +0.1%). Hypothesis: ResNet features are robust to photometric variation but sensitive to pixel-level noise introduced by incorrect augmentation assumptions (medical images != natural photos).
 
-- **Model Behavior at High Sensitivity:** 98.46% sensitivity @ threshold 0.5 indicates the model is conservative, i.e. it predicts pneumonia for most borderline cases. This bias toward the majority class aligns with training on limited labels; the model defaults to positive class when uncertain.
+- **Model Behavior at High Sensitivity:** 98.46% sensitivity at threshold 0.5 indicates the model is conservative, i.e. it predicts pneumonia for most borderline cases. This bias toward the majority class aligns with training on limited labels. The model defaults to positive class when uncertain.
 
 - **Specificity Trade-off:** Low specificity (47.44%) reflects precision-recall trade-off under imbalance. Raising decision threshold would improve specificity but reduce recall and increase missed diagnoses. Clinical protocol would determine appropriate threshold.
 
 - **Metric Instability:** The 2.3 p.p. gap between PR and ROC (already noted) implies that reported "AUROC" values may be misleading for this imbalanced dataset. PR-AUC is the honest metric; ROC-AUC inflates apparent performance.
 
 - **Hypothesis: Limited Probe Capacity:** A single linear layer on frozen features may saturate at ~93% AUROC. Fine-tuning the encoder backbone could close the remaining 2-point supervised gap, but would require substantially more labeled data and longer training.
-
-- **Limitation — No Validation Curves:** Test accuracy and AUROC are reported, but validation loss trajectories are not archived. Training instability or early overfitting cannot be ruled out without loss curves.
-
-- **Suggestion for Week 6:** Attempt fine-tuning the encoder on the 10% labeled subset (while keeping majority of features frozen) to test whether the 2% AUROC gap is due to probe capacity or encoder expressivity. Track validation loss to diagnose overfitting mechanisms.
 
 ---
 
@@ -121,17 +117,18 @@ Perturbation results on SSL 10% probe:
 | Contrast +30% | 0.8478 | 0.9259 | 0.2291 | −0.002 |
 | Contrast −30% | 0.7019 | 0.9265 | 0.2779 | −0.001 |
 
-**Key Finding:** AUROC is robust to photometric perturbations (Δ ≤ 0.4) but sensitive to Gaussian noise (−8.7). Accuracy fluctuates widely (±6.3%) under brightness/contrast, inconsistent with AUROC stability. This suggests predictions remain well-separated despite accuracy threshold changes.
+**Key Finding:** AUROC is robust to photometric perturbations (Δ <= 0.4) but sensitive to Gaussian noise (−8.7). Accuracy fluctuates widely (+/-6.3%) under brightness/contrast, inconsistent with AUROC stability. This suggests predictions remain well-separated despite accuracy threshold changes.
 
 ---
 
 ## 7. TO DOs
 
-- **Validation Curves Unavailable:** Training loss and validation AUROC trajectories would help diagnose convergence behavior or overfitting magnitude.
+- **Validation Curves:** Training loss and validation AUROC trajectories would help diagnose convergence behavior or overfitting magnitude.
 - **Single Seed Run:** No variance estimate or confidence intervals across multiple runs.
 - **No Ablation:** Individual augmentation effects during training not isolated.
 - **Probe Architecture Fixed:** Single linear layer may be undersized.
 - **Domain Shift Limited:** Only 6 perturbations tested and no natural distribution shift (e.g., different scanner, patient population).
+- **For Week 6:** Attempt fine-tuning the encoder on the 10% labeled subset (while keeping majority of features frozen) to test whether the 2% AUROC gap is due to probe capacity or encoder expressivity. Track validation loss to diagnose overfitting mechanisms.
 
 ---
 
