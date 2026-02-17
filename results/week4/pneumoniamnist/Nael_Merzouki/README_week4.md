@@ -7,7 +7,7 @@
 | **Method** | SimCLR-lite (NT-Xent contrastive loss) |
 | **Backbone** | ResNet-18 (ImageNet-pretrained initialization) |
 | **Encoder Output Dim** | 512 |
-| **Projection Head** | 3-layer MLP (512 → 512 → 128) |
+| **Projection Head** | 3-layer MLP (512 -> 512 -> 128) |
 | **Loss Function** | Normalized Temperature-scaled Cross-Entropy (NT-Xent) |
 | **Temperature (τ)** | 0.2 |
 | **Optimizer** | AdamW |
