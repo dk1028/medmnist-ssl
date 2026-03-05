@@ -174,6 +174,10 @@ The model is ready for clinical screening workflows with appropriate radiologist
 
 ---
 
+**Note:** 20% label fraction showed the best accuracy out of the ones I additionally tested (out of curiosity) but I did not include it in the comparison since it was not asked for in the project instructions of my tasks (README at root folder). 
+
+---
+
 ## References
 
 [1-4] Same as Week 6 references
