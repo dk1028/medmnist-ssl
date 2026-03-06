@@ -1,0 +1,6 @@
+Model,Threshold,Accuracy,AUROC,ECE
+Supervised (100%),0.5,0.8093,0.9355,0.2663
+SSL Probe (5%),0.5,0.8109,0.9025,0.2269
+SSL FineTune (5%),0.5,0.8606,0.9539,0.3428
+SSL Probe (10%),0.5,0.8189,0.9137,0.2329
+SSL FineTune (10%),0.5,0.8814,0.9524,0.3407
