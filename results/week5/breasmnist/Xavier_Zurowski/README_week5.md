@@ -1,40 +1,52 @@
 # Week 5 Core Deliverables — Method & Results
 
 ## Method Choice  
-For week 5, my week4 SSL pretrained pt was used, and I began evaluating the represnatation quality with linear probing. The SSL encoder was fully frozen, and only a linear classification head was trained. 
+For week 5, my week4 SSL pretrained pt was used, and I began evaluating the representation quality with linear probing. The SSL encoder was fully frozen, and only a linear classification head was trained. 
 
 In following with week4 baseline, the following data augmentations were applied during SSL pretraining:
 
 ```python
-vT.RandomResizedCrop(224, scale=(0.7, 1.0)),
-vT.RandomHorizontalFlip(p=0.5),
-vT.RandomRotation(degrees=10),
-vT.GaussianNoise(sigma=0.01),
-vT.ColorJitter(brightness=0.05, contrast=0.05),
-vT.Normalize(mean=[0.485, 0.456, 0.406],
-             std=[0.229, 0.224, 0.225]),
+ssl_transform = vT.Compose([
+    vT.RandomResizedCrop(224, scale=(0.7, 1.0)),
+    vT.RandomHorizontalFlip(p=0.5),
+    vT.RandomApply([vT.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
+    vT.RandomRotation(degrees=10),
+    vT.RandomGrayscale(p=0.2),
+    vT.GaussianBlur(kernel_size=3, sigma=(0.1, 0.5)),
+    vT.Normalize(mean=[0.485,0.456,0.406],
+                 std=[0.229,0.224,0.225]),
 ```
 ## Experimental Setup
 
-Linear probes were trained using 5% and 10% of labeled data, and evaluated on the test split. Performance was measured using accuracy, balanced accuracy (since BreasMNIST is unbalanced), and AUROC. Results were compared against two supervised baselines: a frozen-encoder supervised head and a fully supervised model.
+Linear probes were trained using 5%, 10% and 20% of labeled data, and evaluated on the test split. Performance was measured using accuracy, balanced accuracy (since BreastMNIST is unbalanced), and AUROC. Results were compared against my supervised baseline on 100% of the data. Best threshold was tuned on the validation split of BreastMNIST for balanced accuracy.
+
+Setup for the linear probes:
+```
+Optimizer: Adam
+Learning rate: 1e-3
+Epochs: 25
+Batch size: 64
+Weight decay: None
+Loss: CrossEntropyLoss
+
+```
 
 ## Results
 **Linear Probe Performance**
-| Label Fraction | Accuracy | Balanced Accuracy | AUROC |
-| -------------- | -------- | ----------------- | ----- |
-| 5%             | 0.641    | 0.604             | 0.692 |
-| 10%            | 0.724    | 0.706             | 0.781 |
+| Label Fraction | Accuracy | Balanced Accuracy | AUROC | Best Threshold|
+| -------------- | -------- | ----------------- | ----- | -------------- |
+| 5%             | 0.647   | 0.654            | 0.704 | 0.553 |
+| 10%            | 0.609   | 0.672          | 0.736 | 0.698 |
+| 20%            | 0.712   | 0.712          | 0.788 | 0.513 |
 
 **Supervised Baselines**
 | Model Type                         | Accuracy | Balanced Accuracy | AUROC |
 | ---------------------------------- | -------- | ----------------- | ----- |
-| Supervised (head only, frozen enc) | 0.730    | 0.500             | 0.439 |
 | Fully supervised (enc + head)      | 0.897    | 0.854             | 0.928 |
 
-## Analysis
 
 ## Analysis  
-The linear probe significantly outperforms the supervised head-only baseline in AUROC, particularly at 10% labels, indicating that the SSL encoder learns discriminative representations beyond what is achievable with limited supervised training alone. Note that the supervised head-only model collapses to predicting the majority class and does not meaningfully learn feature representation. Hence, comparisons based on accuracy and/or AUROC are difficult to interpret, since the baseline performance reflects the collapse rather than true learning. That being said, the linear probe does not collapse to the majority class, therefore providing a more meaningful measure of the quality of the SSL representations.  
+The linear probe results indicate that the SSL-pretrained encoder captures meaningful class-relevant structure even without labeled data. Performance improves consistently as the labeled fraction increases from 5% to 20%, with AUROC rising from 0.704 to 0.788 and balanced accuracy from 0.654 to 0.712. This suggests the encoder's representations become more separable with increased supervision, furthermore it suggests that the learned features carry genuine discriminative signal rather than noise. The threshold values also stabilize closer to 0.5 at 20%, indicating more balanced and confident predictions at higher label fractions.
 
-Although fully supervised training achieves the best overall performance, the linear probe results demonstrate strong label efficiency and validate the effectiveness of the SSL pretraining pipeline. The performance gap between 5% and 10% further highlights the benefits of even modest increases in labeled data when using high-quality SSL representations.
+Despite this, a substantial gap remains between the SSL probe and the fully supervised baseline across all metrics. The supervised model achieves an AUROC of 0.928 compared to 0.788 at the best probe setting — a gap of 0.14 that reflects the fundamental limitation of linear probing: the encoder is frozen and the linear head can only exploit whatever structure already exists in the feature space. Since the SSL encoder was never optimized for this specific task, some discriminative information may be entangled in ways a linear boundary cannot resolve. These results motivate fine-tuning the encoder, which allows the representations themselves to adapt to the classification objective.
 
